@@ -13,7 +13,7 @@ fn modifier_bits_map_to_words_in_fixed_order() {
     let ctrl_option_shift_cmd = 4 | 2 | 1;
     assert_eq!(
         format_shortcut("p", Some(ctrl_option_shift_cmd), None).as_deref(),
-        Some("ctrl+opt+shift+cmd+p")
+        Some("ctrl+alt+shift+cmd+p")
     );
 }
 
@@ -22,8 +22,34 @@ fn no_command_bit_suppresses_the_command_word() {
     assert_eq!(format_shortcut("1", Some(8), None).as_deref(), Some("1"));
     assert_eq!(
         format_shortcut("1", Some(8 | 2), None).as_deref(),
-        Some("opt+1")
+        Some("alt+1")
     );
+}
+
+#[test]
+fn every_emitted_modifier_is_one_press_accepts() {
+    // `commands::combo::parse_combo` accepts exactly these four words as
+    // modifiers; `option` and `control` are their long-form aliases.
+    const PRESS_MODIFIERS: [&str; 4] = ["ctrl", "alt", "shift", "cmd"];
+    let chords = [
+        format_shortcut("p", Some(4 | 2 | 1), None),
+        format_shortcut("1", Some(8 | 2), None),
+        format_shortcut("n", Some(2), None),
+        format_shortcut("x", Some(8 | 4), None),
+        format_shortcut("", Some(0), Some(36)),
+        format_shortcut("c", Some(0), None),
+    ];
+    for chord in chords.into_iter().flatten() {
+        let Some((modifiers, _key)) = chord.rsplit_once('+') else {
+            continue;
+        };
+        for word in modifiers.split('+') {
+            assert!(
+                PRESS_MODIFIERS.contains(&word),
+                "{chord} uses `{word}`, which press does not parse"
+            );
+        }
+    }
 }
 
 #[test]

@@ -173,7 +173,7 @@ to `role` or `value`.
 
 ## Node descriptors
 
-A node may carry optional presentation descriptors, emitted only when the platform supplies them and omitted otherwise: `subrole`, `role_description`, `placeholder`, `dom_classes`, and `shortcut`. `shortcut` is the element's bound key chord in the same `+`-joined vocabulary `press` accepts (`cmd+shift+p`, `cmd+return`); word order is `ctrl`, `opt`, `shift`, then `cmd`, and a binding with no command key omits `cmd`. macOS emits it for menu items from the provider's own command binding, so the value is directly pressable. A node that supplies none of these serializes exactly as before, so the additions are non-breaking.
+A node may carry optional presentation descriptors, emitted only when the platform supplies them and omitted otherwise: `subrole`, `role_description`, `placeholder`, `dom_classes`, and `shortcut`. `shortcut` is the element's bound key chord in the same `+`-joined vocabulary `press` accepts (`cmd+shift+p`, `cmd+return`); word order is `ctrl`, `alt`, `shift`, then `cmd`, and a binding with no command key omits `cmd`. macOS emits it for menu items from the provider's own command binding, so the value is directly pressable. A node that supplies none of these serializes exactly as before, so the additions are non-breaking.
 
 ## Ref re-identification details
 

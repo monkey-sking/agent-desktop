@@ -63,10 +63,12 @@ mod imp {
     /// Formats the raw `AXMenuItemCmd*` values into the `+`-joined chord the
     /// `press` command accepts, or `None` when nothing is bound.
     ///
-    /// The modifier word order is `ctrl`, `opt`, `shift`, then `cmd`, so the
-    /// string reads the same way a person says the chord. Bit `1 << 3` means
-    /// "no command key"; without it `cmd` is implicit, which is how macOS
-    /// reports the common case of a command-only shortcut.
+    /// The modifier word order is `ctrl`, `alt`, `shift`, then `cmd`, so the
+    /// string reads the same way a person says the chord. Option is spelled
+    /// `alt` because that is the name `press` parses; AppKit's own `opt` is
+    /// rejected as an unknown modifier. Bit `1 << 3` means "no command key";
+    /// without it `cmd` is implicit, which is how macOS reports the common
+    /// case of a command-only shortcut.
     pub(crate) fn format_shortcut(
         char: &str,
         modifiers: Option<i64>,
@@ -81,7 +83,7 @@ mod imp {
             parts.push("ctrl".to_owned());
         }
         if modifiers & MODIFIER_OPTION != 0 {
-            parts.push("opt".to_owned());
+            parts.push("alt".to_owned());
         }
         if modifiers & MODIFIER_SHIFT != 0 {
             parts.push("shift".to_owned());
