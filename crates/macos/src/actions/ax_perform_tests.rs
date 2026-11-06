@@ -5,10 +5,22 @@ fn actions(names: &[&str]) -> Vec<String> {
 }
 
 #[test]
-fn an_advertised_press_is_the_only_action_attempted() {
+fn press_only_items_are_pressed_without_opening() {
     assert_eq!(
         activation_plan(Some(&actions(&["AXPress", "AXShowMenu"]))),
         vec!["AXPress"]
+    );
+}
+
+#[test]
+fn items_that_publish_both_keep_open_as_the_fallthrough() {
+    assert_eq!(
+        activation_plan(Some(&actions(&["AXPress", "AXOpen"]))),
+        vec!["AXPress", "AXOpen"]
+    );
+    assert_eq!(
+        activation_plan(Some(&actions(&["AXOpen", "AXPress", "AXShowMenu"]))),
+        vec!["AXPress", "AXOpen"]
     );
 }
 

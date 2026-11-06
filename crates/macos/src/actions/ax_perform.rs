@@ -97,18 +97,20 @@ mod imp {
     /// list is known. When the list itself cannot be read the conventional
     /// order is tried once; the first code that proves the action never started
     /// still moves on to the next one.
+    ///
+    /// An item that publishes both activations keeps `AXOpen` behind `AXPress`:
+    /// some AppKit rows list `AXPress` and still answer it with
+    /// `kAXErrorActionUnsupported`, so the plan must be able to fall through to
+    /// the menu-backed open instead of reporting the item unactivatable.
     pub(super) fn activation_plan(actions: Option<&[String]>) -> Vec<&'static str> {
         let Some(actions) = actions else {
             return vec!["AXPress", "AXOpen"];
         };
         let advertises = |name: &str| actions.iter().any(|it| it == name);
-        if advertises("AXPress") {
-            vec!["AXPress"]
-        } else if advertises("AXOpen") {
-            vec!["AXOpen"]
-        } else {
-            Vec::new()
-        }
+        ["AXPress", "AXOpen"]
+            .into_iter()
+            .filter(|name| advertises(name))
+            .collect()
     }
 
     fn action_names(el: &AXElement, deadline: agent_desktop_core::Deadline) -> Option<Vec<String>> {
