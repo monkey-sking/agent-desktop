@@ -82,23 +82,33 @@ mod imp {
         deadline: agent_desktop_core::Deadline,
     ) -> Result<bool, AdapterError> {
         let actions = action_names(el, deadline);
-        let advertises = |name: &str| {
-            actions
-                .as_ref()
-                .is_some_and(|list| list.iter().any(|it| it == name))
-        };
-        let order: [&str; 2] = if advertises("AXOpen") && !advertises("AXPress") {
-            ["AXOpen", "AXPress"]
-        } else {
-            ["AXPress", "AXOpen"]
-        };
-        for name in order {
-            match perform_action_once(el, name, deadline) {
-                Ok(true) => return Ok(true),
-                Ok(false) | Err(_) => continue,
+        for name in activation_plan(actions.as_deref()) {
+            if perform_listed_action(el, name, deadline)? {
+                return Ok(true);
             }
         }
         Ok(false)
+    }
+
+    /// The actions worth attempting, from what the element advertises.
+    ///
+    /// A responder can answer `kAXErrorSuccess` to an action it never
+    /// published and never ran, so nothing unadvertised is attempted once the
+    /// list is known. When the list itself cannot be read the conventional
+    /// order is tried once; the first code that proves the action never started
+    /// still moves on to the next one.
+    pub(super) fn activation_plan(actions: Option<&[String]>) -> Vec<&'static str> {
+        let Some(actions) = actions else {
+            return vec!["AXPress", "AXOpen"];
+        };
+        let advertises = |name: &str| actions.iter().any(|it| it == name);
+        if advertises("AXPress") {
+            vec!["AXPress"]
+        } else if advertises("AXOpen") {
+            vec!["AXOpen"]
+        } else {
+            Vec::new()
+        }
     }
 
     fn action_names(el: &AXElement, deadline: agent_desktop_core::Deadline) -> Option<Vec<String>> {
@@ -111,7 +121,13 @@ mod imp {
         .value
     }
 
-    fn perform_action_once(
+    /// Performs one advertised action and reports whether it was delivered.
+    ///
+    /// `kAXErrorCannotComplete` and `kAXErrorFailure` can be returned after the
+    /// action already started, so they end the sequence with an uncertain error
+    /// instead of a retry through another action or a synthetic key. Only a
+    /// clearly unsupported action returns `false` here.
+    fn perform_listed_action(
         el: &AXElement,
         name: &str,
         deadline: agent_desktop_core::Deadline,
@@ -122,7 +138,7 @@ mod imp {
             action.as_concrete_TypeRef(),
             deadline,
         )?;
-        Ok(error == accessibility_sys::kAXErrorSuccess)
+        ax_mutation::classify_result(el, name, ax_mutation::PERFORM_API, error)
     }
 }
 
@@ -156,3 +172,7 @@ mod imp {
 }
 
 pub(crate) use imp::{advertises_action, perform_observed_action, press_or_open};
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "ax_perform_tests.rs"]
+mod tests;
