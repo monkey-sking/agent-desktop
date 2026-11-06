@@ -53,7 +53,7 @@ An element gets a ref when its role is interactive or it advertises a primary ac
 
 ### Menu item shortcuts
 
-A `menuitem` node with a key binding carries it as `shortcut`, in the same `+`-joined form `press` accepts: `"shortcut": "cmd+shift+p"`, `"shortcut": "cmd+return"`. The word order is `ctrl`, `alt`, `shift`, then `cmd`; a binding with no command key omits `cmd`. The value is the provider's own binding, so a shortcut read here always presses back. Snapshot the menu surface once to learn every command an app offers, then drive it with `press` instead of clicking. Headed dispatch resolves the item through the app's `AXMenuBar` and activates it with `AXPress`, so the app does not have to be focused; headless dispatch sends the chord to the app's process as a key event.
+A `menuitem` node with a key binding carries it as `shortcut`, in the same `+`-joined form `press` accepts: `"shortcut": "cmd+shift+p"`, `"shortcut": "cmd+return"`. The word order is `ctrl`, `alt`, `shift`, then `cmd`; a binding with no command key omits `cmd`. The value is the provider's own binding, so a shortcut read here always presses back. Snapshot the menu surface once to learn every command an app offers, then drive it with `press` instead of clicking. Headed `press --app` activates that app's window before it looks anything up, then resolves the item through its `AXMenuBar` and provides it with `AXPress`; headless dispatch sends the chord to the app's process as a key event and leaves the foreground alone.
 
 ### Ref re-identification
 
